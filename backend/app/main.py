@@ -23,8 +23,8 @@ Instrumentator().instrument(app).expose(app)
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(product.router)
-app.include_router(cart.router, prefix="/cart", tags=["cart"])
-app.include_router(order.router, prefix="/orders", tags=["orders"])
+app.include_router(cart.router)
+app.include_router(order.router)
 app.include_router(admin.router)
 
 @app.get("/")

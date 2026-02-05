@@ -1,0 +1,170 @@
+/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [51501]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:57078 - "GET /categories/?limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57133 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57133 - "GET /categories/?limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "GET /products/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "OPTIONS /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "POST /cart/add HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "OPTIONS /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57187 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57187 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57181 - "OPTIONS /orders/checkout HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57187 - "POST /orders/checkout HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/uvicorn/protocols/http/httptools_impl.py", line 419, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/prometheus_fastapi_instrumentator/middleware.py", line 169, in __call__
+    raise exc
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/prometheus_fastapi_instrumentator/middleware.py", line 167, in __call__
+    await self.app(scope, receive, send_wrapper)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/routing.py", line 762, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/routing.py", line 782, in app
+    await route.handle(scope, receive, send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 315, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/Users/vedantsomani/STLP Mac Projects/iMentorship/ecommerce_project/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 155, in serialize_response
+    raise ResponseValidationError(
+        errors=_normalize_errors(errors), body=response_content
+    )
+fastapi.exceptions.ResponseValidationError: 1 validation errors:
+  {'type': 'missing', 'loc': ('response', 'items', 0, 'product_name'), 'msg': 'Field required', 'input': <app.models.order.OrderItem object at 0x10c036710>, 'url': 'https://errors.pydantic.dev/2.12/v/missing'}
+
+INFO:     127.0.0.1:57181 - "POST /orders/checkout HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:57181 - "POST /orders/checkout HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:57181 - "POST /orders/checkout HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:57181 - "POST /orders/checkout HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:57278 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57278 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57278 - "GET /categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57278 - "GET /categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57278 - "GET /products/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57278 - "POST /cart/add HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57278 - "POST /cart/add HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57278 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57335 - "OPTIONS /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "OPTIONS /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57278 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57335 - "GET /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57338 - "GET /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57335 - "GET /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57338 - "GET /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57379 - "GET /products/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57379 - "POST /cart/add HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57379 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57401 - "OPTIONS /products/5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57379 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57399 - "GET /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57400 - "GET /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57401 - "GET /products/5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57399 - "GET /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57400 - "GET /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57401 - "GET /products/5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "GET /categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "GET /categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "GET /products/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "POST /cart/add HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57471 - "OPTIONS /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57468 - "GET /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57470 - "GET /products/5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57466 - "GET /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57471 - "GET /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57468 - "GET /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57470 - "GET /products/5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57466 - "GET /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57471 - "GET /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57473 - "GET /categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57473 - "GET /categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57473 - "GET /products/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57560 - "POST /cart/add HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57560 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57560 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57581 - "OPTIONS /products/9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57583 - "OPTIONS /products/9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57560 - "GET /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57580 - "GET /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57578 - "GET /products/5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57575 - "GET /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57581 - "GET /products/9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57560 - "GET /products/6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57580 - "GET /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57578 - "GET /products/5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57575 - "GET /products/7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57581 - "GET /products/9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57581 - "OPTIONS /cart/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57575 - "DELETE /cart/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57575 - "GET /products/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57575 - "POST /cart/add HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57575 - "POST /cart/add HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57575 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57575 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57642 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57643 - "GET /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57643 - "GET /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57642 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57714 - "GET /products/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57816 - "GET /categories/?limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57816 - "GET /categories/?limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57892 - "GET /products/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57892 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57892 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58327 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58327 - "GET /cart/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58331 - "GET /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58330 - "GET /products/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58330 - "GET /products/3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58331 - "GET /products/2 HTTP/1.1" 200 OK

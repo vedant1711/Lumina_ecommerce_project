@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, ShoppingCart, Truck, Shield, Star } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage() {
+    const params = useParams()
+    const id = params?.id as string
+
     const [product, setProduct] = useState<Product | null>(null)
     const [loading, setLoading] = useState(true)
     const [quantity, setQuantity] = useState(1)
@@ -17,7 +20,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     useEffect(() => {
         async function load() {
             try {
-                const data = await getProduct(parseInt(params.id))
+                if (!id) return
+                const data = await getProduct(parseInt(id))
                 setProduct(data)
             } catch (e) {
                 console.error("Failed to load product", e)
@@ -26,8 +30,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 setLoading(false)
             }
         }
-        if (params.id) load()
-    }, [params.id])
+        load()
+    }, [id])
 
     const handleAddToCart = async () => {
         if (!product) return
@@ -99,19 +103,18 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
                 {/* Details Section */}
                 <div className="flex flex-col justify-center">
-                    <h1 className="text-4xl font-bold mb-2">{product.name}</h1>
+                    <h1 className="text-4xl font-bold mb-2 text-foreground">{product.name}</h1>
                     <div className="flex items-center gap-2 mb-6 text-muted-foreground">
-                        <span className="bg-white/10 px-3 py-1 rounded-full text-xs font-medium">
+                        <span className="bg-muted px-3 py-1 rounded-full text-xs font-medium text-foreground">
                             {product.category_id ? `Category ${product.category_id}` : 'General'}
-                            {/* Ideally we fetch category name but ID is mostly what we have on product obj unless expanded */}
                         </span>
                         <span>•</span>
-                        <span className={product.price > 100 ? "text-cyan-400" : "text-green-400"}>
+                        <span className={product.price > 100 ? "text-cyan-600 dark:text-cyan-400" : "text-green-600 dark:text-green-400"}>
                             In Stock
                         </span>
                     </div>
 
-                    <p className="text-3xl font-bold mb-6 text-white">${product.price.toFixed(2)}</p>
+                    <p className="text-3xl font-bold mb-6 text-foreground">${product.price.toFixed(2)}</p>
 
                     <p className="text-muted-foreground leading-relaxed mb-8 text-lg">
                         {product.description || "No description available for this product."}

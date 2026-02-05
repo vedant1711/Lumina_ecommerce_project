@@ -43,8 +43,8 @@ export function ProductCard({ product }: ProductCardProps) {
                 transition={{ duration: 0.2 }}
                 className="h-full"
             >
-                <Card className="overflow-hidden border-white/5 bg-white/5 hover:bg-white/10 transition-colors group h-full flex flex-col">
-                    <div className="relative aspect-square overflow-hidden bg-slate-800">
+                <Card className="overflow-hidden border-border bg-card/50 hover:bg-card/80 transition-colors group h-full flex flex-col shadow-sm">
+                    <div className="relative aspect-square overflow-hidden bg-muted">
                         {/* Placeholder for real image or fallback */}
                         {product.image_url ? (
                             <img
@@ -53,7 +53,7 @@ export function ProductCard({ product }: ProductCardProps) {
                                 className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-gradient-to-br from-slate-800 to-slate-900">
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-gradient-to-br from-muted to-muted/50">
                                 No Image
                             </div>
                         )}
@@ -61,7 +61,7 @@ export function ProductCard({ product }: ProductCardProps) {
                             <Button
                                 size="icon"
                                 variant="secondary"
-                                className="rounded-full shadow-lg hover:bg-indigo-500 hover:text-white transition-colors"
+                                className="rounded-full shadow-lg hover:bg-primary hover:text-primary-foreground transition-colors"
                                 onClick={handleAddToCart}
                             >
                                 <ShoppingCart className="w-4 h-4" />
@@ -69,12 +69,12 @@ export function ProductCard({ product }: ProductCardProps) {
                         </div>
                     </div>
                     <CardContent className="p-4 flex-grow">
-                        <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
+                        <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors text-foreground">{product.name}</h3>
                         <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
                     </CardContent>
                     <CardFooter className="p-4 pt-0 flex items-center justify-between">
-                        <span className="text-xl font-bold text-white">${product.price.toFixed(2)}</span>
-                        <Button size="sm" variant="ghost" className="text-xs">
+                        <span className="text-xl font-bold text-foreground">${product.price.toFixed(2)}</span>
+                        <Button size="sm" variant="ghost" className="text-xs text-muted-foreground hover:text-primary">
                             View Details
                         </Button>
                     </CardFooter>

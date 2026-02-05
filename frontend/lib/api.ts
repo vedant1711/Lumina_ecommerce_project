@@ -11,6 +11,9 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        console.log("DEBUG: Sending request with token:", token.substring(0, 10) + "...")
+    } else {
+        console.log("DEBUG: No token found in localStorage")
     }
 
     try {
