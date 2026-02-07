@@ -1,23 +1,75 @@
-# Postman Documentation
+# Postman Collection Guide
 
-This project includes a `postman.json` file that can be imported into [Postman](https://www.postman.com/) to test the API endpoints.
+## Importing the Collection
 
-## How to Import
-1. Open Postman.
-2. Click **Import** in the top left.
-3. Drag and drop the `postman.json` file into the import window.
+1. Open Postman
+2. Click **Import** (top left)
+3. Drag and drop `postman.json` or click **Upload Files**
+4. The "Lumina E-Commerce API" collection will appear
+
+## Setup
+
+### Set Base URL
+1. Click on the collection name "Lumina E-Commerce API"
+2. Go to **Variables** tab
+3. Set `baseUrl` to your API URL:
+   - Local: `http://localhost:8000`
+   - Production: `https://your-api.onrender.com`
+
+### Authentication
+1. Run the **Login** request first (in Authentication folder)
+2. The token is automatically saved to the `token` collection variable
+3. All subsequent requests will use this token
 
 ## Collection Structure
-- **Auth folder**: Contains requests for `Signup` and `Login`.
-- **Products folder**: Contains requests for fetching the product list.
-- **Cart folder**: Contains requests for managing the shopping cart.
 
-## Environment Variables
-The collection is configured to use `http://localhost:8000` as the base URL. If your server is running elsewhere, edit the URL in the requests.
+```
+Lumina E-Commerce API
+├── Authentication
+│   ├── Sign Up
+│   └── Login (auto-saves token)
+├── Products
+│   ├── List Products
+│   ├── Search Products
+│   ├── Filter by Category
+│   ├── Get Product by ID
+│   ├── Create Product
+│   └── Update Product
+├── Categories
+│   ├── List Categories
+│   └── Create Category
+├── Cart
+│   ├── Get Cart
+│   ├── Add to Cart
+│   ├── Update Cart Item
+│   ├── Remove Cart Item
+│   └── Clear Cart
+├── Payments
+│   ├── Create Payment Intent
+│   └── Verify Payment
+├── Orders
+│   ├── Checkout
+│   └── Get Orders
+└── Admin
+    ├── List Users
+    ├── Update User Role
+    ├── List All Orders
+    ├── List All Products (Admin)
+    └── List All Categories (Admin)
+```
 
-## Authentication
-Most endpoints (Cart, Orders) require authentication.
-1. Run the **Login** request.
-2. Copy the `access_token` from the response.
-3. In requests that require auth (e.g., Get Cart), go to the **Headers** tab.
-4. Set the `Authorization` header to `Bearer <your_copied_token>`.
+## Quick Test Flow
+
+1. **Login** → Get auth token
+2. **List Products** → See available products
+3. **Add to Cart** → Add product ID 1
+4. **Get Cart** → View cart contents
+5. **Create Payment Intent** → Get Stripe client secret
+6. (Complete payment via frontend)
+7. **Checkout** → Complete order with payment_intent_id
+
+## Default Test Credentials
+
+- **Email**: `verify@test.com`
+- **Password**: `password`
+- **Role**: Admin (superuser)

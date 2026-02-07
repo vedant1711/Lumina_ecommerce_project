@@ -23,6 +23,7 @@ class ProductBase(BaseModel):
     price: float
     stock: int = 0
     image_url: Optional[str] = None
+    specifications: Optional[dict] = None
     category_id: Optional[int] = None
 
 class ProductCreate(ProductBase):
@@ -34,6 +35,7 @@ class ProductUpdate(BaseModel):
     price: Optional[float] = None
     stock: Optional[int] = None
     image_url: Optional[str] = None
+    specifications: Optional[dict] = None
     category_id: Optional[int] = None
 
 class Product(ProductBase):

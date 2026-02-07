@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 from app.database import engine, Base
-from app.routers import auth, product, cart, order, admin
+from app.routers import auth, product, cart, order, admin, payment
 
 # Create tables (simple init, use alembic for migrations in prod)
 Base.metadata.create_all(bind=engine)
@@ -26,6 +26,7 @@ app.include_router(product.router)
 app.include_router(cart.router)
 app.include_router(order.router)
 app.include_router(admin.router)
+app.include_router(payment.router)
 
 @app.get("/")
 def read_root():

@@ -66,18 +66,10 @@ export default function AdminDashboard() {
 
                 {/* Users Tab */}
                 <TabsContent value="users">
-                    <DataTable
-                        title="Registered Users"
-                        data={users}
-                        columns={[
-                            { key: "id", label: "ID" },
-                            { key: "email", label: "Email" },
-                            { key: "full_name", label: "Full Name" },
-                            { key: "is_active", label: "Active" },
-                            { key: "is_superuser", label: "Admin" },
-                            { key: "created_at", label: "Joined" } // Ensure backend sends this
-                        ]}
-                    />
+                    <UsersTable data={users} onUpdate={() => {
+                        // Reload data
+                        fetchWithAuth('/admin/users').then(setUsers).catch(console.error)
+                    }} />
                 </TabsContent>
 
                 {/* Products Tab */}
@@ -126,6 +118,79 @@ export default function AdminDashboard() {
                 </TabsContent>
             </Tabs>
         </div>
+    )
+}
+
+import { Button } from "@/components/ui/button"
+import { Shield, ShieldOff, Check } from "lucide-react"
+
+function UsersTable({ data, onUpdate }: { data: any[], onUpdate: () => void }) {
+    if (!data) return null;
+
+    const handleToggleAdmin = async (user: any) => {
+        const newStatus = !user.is_superuser;
+        if (!confirm(`Are you sure you want to ${newStatus ? 'PROMOTE' : 'DEMOTE'} ${user.email}?`)) return;
+
+        try {
+            await fetchWithAuth(`/admin/users/${user.id}/role`, {
+                method: 'PUT',
+                body: JSON.stringify({ is_superuser: newStatus })
+            });
+            toast.success(`User ${newStatus ? 'promoted to Admin' : 'demoted'}`);
+            onUpdate();
+        } catch (err) {
+            toast.error("Failed to update role");
+        }
+    }
+
+    return (
+        <Card>
+            <CardHeader className="py-4">
+                <CardTitle className="text-lg">Registered Users</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+                <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-12">ID</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Full Name</TableHead>
+                                <TableHead>Role</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {data.map((user) => (
+                                <TableRow key={user.id}>
+                                    <TableCell>{user.id}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
+                                    <TableCell>{user.full_name}</TableCell>
+                                    <TableCell>
+                                        {user.is_superuser ? (
+                                            <span className="inline-flex items-center text-xs font-bold text-indigo-500 bg-indigo-500/10 px-2 py-1 rounded-full">
+                                                <Shield className="w-3 h-3 mr-1" /> Admin
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground">User</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            size="sm"
+                                            variant={user.is_superuser ? "destructive" : "default"}
+                                            onClick={() => handleToggleAdmin(user)}
+                                        >
+                                            {user.is_superuser ? "Revoke" : "Make Admin"}
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
     )
 }
 

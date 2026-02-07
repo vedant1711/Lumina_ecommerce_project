@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.models.user import User
 from app.models.product import Product, Category
+from app.database import Base
 from app.models.order import Order, OrderItem
 from app.core.security import get_password_hash
 import random
@@ -12,11 +13,14 @@ import os
 # Add parent directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-DATABASE_URL = "sqlite:///./sql_app.db"
+# Use absolute path to ensure we're using the same DB as the backend
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_URL = f"sqlite:///{os.path.join(SCRIPT_DIR, 'sql_app.db')}"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def seed_data():
+    Base.metadata.create_all(bind=engine) # Ensure tables exist
     db = SessionLocal()
     try:
         print("Seeding data...")
@@ -69,15 +73,38 @@ def seed_data():
         
         # 3. Products
         products = []
-        for i in range(20):
+        for i in range(50): # Increased to 50
             cat = random.choice(db_categories)
+            
+            # Generate Specs based on Category
+            specs = {}
+            if cat.name == "Electronics":
+                specs = {
+                    "Brand": random.choice(["TechBrand", "ElectroCore", "GigaTech"]),
+                    "Warranty": "2 Years",
+                    "CPU": random.choice(["M1", "Intel i9", "Ryzen 9"]),
+                    "RAM": random.choice(["8GB", "16GB", "32GB"])
+                }
+            elif cat.name == "Clothing":
+                specs = {
+                    "Material": random.choice(["Cotton", "Polyester", "Wool"]),
+                    "Size": random.choice(["S", "M", "L", "XL"]),
+                    "Care": "Machine Wash"
+                }
+            elif cat.name == "Home & Garden":
+                specs = {
+                    "Dimensions": f"{random.randint(10,100)}x{random.randint(10,100)} cm",
+                    "Weight": f"{random.uniform(0.5, 10):.1f} kg"
+                }
+            
             prod = Product(
                 name=f"{cat.name} Product {i}",
-                description=f"This is a description for product {i} in {cat.name}. It is a very good product.",
-                price=random.uniform(10.0, 500.0),
+                description=f"High quality {cat.name} item. Features include {', '.join(specs.keys())}. Perfect for your needs.",
+                price=round(random.uniform(10.0, 500.0), 2),
                 stock=random.randint(0, 100),
                 category_id=cat.id,
-                image_url=f"https://placehold.co/400x300?text=Product+{i}"
+                image_url=f"https://picsum.photos/seed/{i+100}/400/300", # Random varied images
+                specifications=specs
             )
             db.add(prod)
             db.flush()

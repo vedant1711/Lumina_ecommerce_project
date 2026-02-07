@@ -19,6 +19,9 @@ class UserResponse(UserBase):
     class Config:
         orm_mode = True
 
+class UserRoleUpdate(BaseModel):
+    is_superuser: bool
+
 class Token(BaseModel):
     access_token: str
     token_type: str

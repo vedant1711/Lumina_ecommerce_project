@@ -10,6 +10,7 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     total_amount = Column(Float, nullable=False)
     status = Column(String, default="pending")  # pending, paid, shipped, cancelled
+    payment_intent_id = Column(String, nullable=True)  # Stripe PaymentIntent ID
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     user = relationship("app.models.user.User", backref="orders")

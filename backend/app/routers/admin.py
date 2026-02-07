@@ -31,6 +31,30 @@ def read_users(
     # but specific admin response model is better. For now returning partial dicts or relying on default serialization effectively).
     return [{"id": u.id, "email": u.email, "full_name": u.full_name, "is_active": u.is_active, "is_superuser": u.is_superuser, "created_at": u.created_at} for u in users]
 
+from app.schemas.user import UserRoleUpdate
+
+@router.put("/users/{user_id}/role")
+def update_user_role(
+    user_id: int,
+    role_update: UserRoleUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_superuser),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Optional: Prevent admin from demoting themselves to avoid lockout, 
+    # but strictly speaking a superuser *could* remove their own rights.
+    if user.id == current_user.id and not role_update.is_superuser:
+         # raise HTTPException(status_code=400, detail="Cannot demote yourself")
+         pass
+
+    user.is_superuser = role_update.is_superuser
+    db.commit()
+    db.refresh(user)
+    return {"message": "User role updated", "user": {"id": user.id, "is_superuser": user.is_superuser}}
+
 @router.get("/orders", response_model=List[Any])
 def read_orders(
     skip: int = 0,
@@ -86,4 +110,11 @@ def read_categories(
     current_user: User = Depends(get_current_superuser),
 ):
     categories = db.query(Category).offset(skip).limit(limit).all()
-    return categories
+    return [
+        {
+            "id": c.id,
+            "name": c.name,
+            "description": c.description
+        }
+        for c in categories
+    ]

@@ -40,17 +40,38 @@ def add_to_cart(item: CartItem, user: User = Depends(get_current_user), db: Sess
     redis_client.hincrby(cart_key, str(item.product_id), item.quantity)
     return {"message": "Item added to cart"}
 
+from app.models.product import Product
+
 @router.get("/cart/")
 def get_cart(user: User = Depends(get_current_user), db: Session = Depends(database.get_db)):
-
     cart_key = get_cart_key(user.id)
     items = redis_client.hgetall(cart_key)
     # items is { "product_id": "quantity", ... }
-    cart_items = []
-    for pid, qty in items.items():
-        cart_items.append({"product_id": int(pid), "quantity": int(qty)})
     
-    return {"items": cart_items}
+    if not items:
+        return {"items": [], "total_amount": 0.0}
+
+    cart_items = []
+    total_amount = 0.0
+
+    # Batch fetch products could be optimized, but loop is fine for small carts
+    for pid_str, qty_str in items.items():
+        pid = int(pid_str)
+        qty = int(qty_str)
+        
+        product = db.query(Product).filter(Product.id == pid).first()
+        if product:
+            item_total = product.price * qty
+            total_amount += item_total
+            cart_items.append({
+                "product_id": pid,
+                "name": product.name,
+                "price": product.price,
+                "image_url": product.image_url,
+                "quantity": qty
+            })
+    
+    return {"items": cart_items, "total_amount": total_amount}
 
 @router.delete("/cart/clear")
 def clear_cart(user: User = Depends(get_current_user), db: Session = Depends(database.get_db)):
@@ -58,3 +79,24 @@ def clear_cart(user: User = Depends(get_current_user), db: Session = Depends(dat
     cart_key = get_cart_key(user.id)
     redis_client.delete(cart_key)
     return {"message": "Cart cleared"}
+
+@router.put("/cart/update")
+def update_cart_item(item: CartItem, user: User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    """Update the quantity of an item in the cart. Set quantity to 0 to remove."""
+    cart_key = get_cart_key(user.id)
+    
+    if item.quantity <= 0:
+        # Remove item if quantity is 0 or negative
+        redis_client.hdel(cart_key, str(item.product_id))
+        return {"message": "Item removed from cart"}
+    else:
+        # Set the new quantity
+        redis_client.hset(cart_key, str(item.product_id), item.quantity)
+        return {"message": "Cart updated"}
+
+@router.delete("/cart/remove/{product_id}")
+def remove_from_cart(product_id: int, user: User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    """Remove a specific item from the cart."""
+    cart_key = get_cart_key(user.id)
+    redis_client.hdel(cart_key, str(product_id))
+    return {"message": "Item removed from cart"}

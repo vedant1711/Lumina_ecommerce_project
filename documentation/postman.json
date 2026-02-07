@@ -1,34 +1,53 @@
 {
     "info": {
-        "_postman_id": "8e965bec-4037-4f69-a0c2-165f5d3bcc94",
-        "name": "E-Commerce API",
+        "name": "Lumina E-Commerce API",
+        "description": "Complete API collection for Lumina E-Commerce platform including authentication, products, cart, orders, payments, and admin endpoints.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000"
+        },
+        {
+            "key": "token",
+            "value": ""
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}",
+                "type": "string"
+            }
+        ]
     },
     "item": [
         {
-            "name": "Auth",
+            "name": "Authentication",
+            "description": "User registration and login endpoints",
             "item": [
                 {
-                    "name": "Signup",
+                    "name": "Sign Up",
                     "request": {
                         "method": "POST",
-                        "header": [],
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password\",\n    \"full_name\": \"New User\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"securepassword\",\n  \"full_name\": \"John Doe\"\n}"
                         },
                         "url": {
-                            "raw": "http://localhost:8000/auth/signup",
-                            "protocol": "http",
+                            "raw": "{{baseUrl}}/auth/signup",
                             "host": [
-                                "localhost"
+                                "{{baseUrl}}"
                             ],
-                            "port": "8000",
                             "path": [
                                 "auth",
                                 "signup"
@@ -39,31 +58,49 @@
                 },
                 {
                     "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.access_token) {",
+                                    "    pm.collectionVariables.set('token', jsonData.access_token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
                     "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
                         "method": "POST",
-                        "header": [],
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
                         "body": {
                             "mode": "urlencoded",
                             "urlencoded": [
                                 {
                                     "key": "username",
-                                    "value": "user@example.com",
-                                    "type": "text"
+                                    "value": "verify@test.com"
                                 },
                                 {
                                     "key": "password",
-                                    "value": "password",
-                                    "type": "text"
+                                    "value": "password"
                                 }
                             ]
                         },
                         "url": {
-                            "raw": "http://localhost:8000/auth/login",
-                            "protocol": "http",
+                            "raw": "{{baseUrl}}/auth/login",
                             "host": [
-                                "localhost"
+                                "{{baseUrl}}"
                             ],
-                            "port": "8000",
                             "path": [
                                 "auth",
                                 "login"
@@ -76,21 +113,211 @@
         },
         {
             "name": "Products",
+            "description": "Product catalog endpoints",
             "item": [
                 {
-                    "name": "Get Products",
+                    "name": "List Products",
                     "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
                         "method": "GET",
-                        "header": [],
                         "url": {
-                            "raw": "http://localhost:8000/products/",
-                            "protocol": "http",
+                            "raw": "{{baseUrl}}/products/?skip=0&limit=20",
                             "host": [
-                                "localhost"
+                                "{{baseUrl}}"
                             ],
-                            "port": "8000",
                             "path": [
                                 "products",
+                                ""
+                            ],
+                            "query": [
+                                {
+                                    "key": "skip",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Search Products",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/products/?search=headphones",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                ""
+                            ],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "headphones"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Filter by Category",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/products/?category_id=1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                ""
+                            ],
+                            "query": [
+                                {
+                                    "key": "category_id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Product by ID",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/products/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Product",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New Product\",\n  \"description\": \"Product description\",\n  \"price\": 49.99,\n  \"stock\": 100,\n  \"image_url\": \"https://via.placeholder.com/300\",\n  \"category_id\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/products/",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                ""
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Product",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"price\": 59.99,\n  \"stock\": 75\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/products/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Categories",
+            "description": "Product category endpoints",
+            "item": [
+                {
+                    "name": "List Categories",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories",
+                                ""
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Category",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New Category\",\n  \"description\": \"Category description\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories",
                                 ""
                             ]
                         }
@@ -101,28 +328,313 @@
         },
         {
             "name": "Cart",
+            "description": "Shopping cart endpoints (requires authentication)",
             "item": [
                 {
                     "name": "Get Cart",
                     "request": {
                         "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer <access_token>",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "http://localhost:8000/cart/",
-                            "protocol": "http",
+                            "raw": "{{baseUrl}}/cart/",
                             "host": [
-                                "localhost"
+                                "{{baseUrl}}"
                             ],
-                            "port": "8000",
                             "path": [
                                 "cart",
                                 ""
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Add to Cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/cart/add",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "cart",
+                                "add"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Cart Item",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 3\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/cart/update",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "cart",
+                                "update"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Remove Cart Item",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "{{baseUrl}}/cart/remove/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "cart",
+                                "remove",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Clear Cart",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "{{baseUrl}}/cart/clear",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "cart",
+                                "clear"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Payments",
+            "description": "Stripe payment endpoints (requires authentication)",
+            "item": [
+                {
+                    "name": "Create Payment Intent",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"amount\": 99.99\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/payment/create-intent",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payment",
+                                "create-intent"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify Payment",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/payment/verify/pi_test123",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payment",
+                                "verify",
+                                "pi_test123"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "description": "Order management endpoints (requires authentication)",
+            "item": [
+                {
+                    "name": "Checkout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"payment_intent_id\": \"pi_xxx\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/orders/checkout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "orders",
+                                "checkout"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Orders",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/orders/",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "orders",
+                                ""
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "description": "Admin-only endpoints (requires superuser)",
+            "item": [
+                {
+                    "name": "List Users",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update User Role",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"is_superuser\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users/2/role",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users",
+                                "2",
+                                "role"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "List All Orders",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/orders",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "orders"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "List All Products (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "products"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "List All Categories (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/categories",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "categories"
                             ]
                         }
                     },

@@ -14,11 +14,42 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from app.core.config import settings
 
+from pydantic import BaseModel
+
+class CheckoutRequest(BaseModel):
+    payment_intent_id: str
+
 router = APIRouter(tags=["Orders"])
 from app.core.dependencies import get_current_user
 
 @router.post("/orders/checkout", response_model=OrderResponse)
-def checkout(user: User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+def checkout(
+    checkout_data: CheckoutRequest,
+    user: User = Depends(get_current_user), 
+    db: Session = Depends(database.get_db)
+):
+    # Verify payment with Stripe
+    import stripe
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+    
+    try:
+        # Retrieve and verify the payment intent
+        intent = stripe.PaymentIntent.retrieve(checkout_data.payment_intent_id)
+        
+        if intent.status != "succeeded":
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Payment not completed. Status: {intent.status}"
+            )
+    except stripe.error.StripeError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Payment verification failed: {str(e)}"
+        )
+    
     cart_key = get_cart_key(user.id)
     cart_items_raw = redis_client.hgetall(cart_key)
     
@@ -47,7 +78,12 @@ def checkout(user: User = Depends(get_current_user), db: Session = Depends(datab
         })
 
     # Create Order
-    new_order = Order(user_id=user.id, total_amount=total_amount, status="paid") # Simplified status
+    new_order = Order(
+        user_id=user.id, 
+        total_amount=total_amount, 
+        status="paid",
+        payment_intent_id=checkout_data.payment_intent_id
+    )
     db.add(new_order)
     db.flush() # get ID
 

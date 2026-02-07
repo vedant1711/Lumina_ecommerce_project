@@ -41,6 +41,7 @@ export interface Product {
     description?: string;
     price: number;
     image_url?: string;
+    specifications?: Record<string, string>;
     category_id?: number;
 }
 
@@ -69,4 +70,39 @@ export async function getCart() {
 
 export async function clearCart() {
     return fetchWithAuth('/cart/clear', { method: 'DELETE' });
+}
+
+export async function checkout() {
+    return fetchWithAuth('/orders/checkout', { method: 'POST' });
+}
+
+export async function getOrders() {
+    return fetchWithAuth('/orders/');
+}
+
+export async function updateCartItem(product_id: number, quantity: number) {
+    return fetchWithAuth('/cart/update', {
+        method: 'PUT',
+        body: JSON.stringify({ product_id, quantity }),
+    });
+}
+
+export async function removeFromCart(product_id: number) {
+    return fetchWithAuth(`/cart/remove/${product_id}`, {
+        method: 'DELETE',
+    });
+}
+
+export async function createPaymentIntent(amount: number) {
+    return fetchWithAuth('/payment/create-intent', {
+        method: 'POST',
+        body: JSON.stringify({ amount }),
+    });
+}
+
+export async function confirmCheckout(payment_intent_id: string) {
+    return fetchWithAuth('/orders/checkout', {
+        method: 'POST',
+        body: JSON.stringify({ payment_intent_id }),
+    });
 }
