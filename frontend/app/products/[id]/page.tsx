@@ -28,15 +28,8 @@ interface Review {
 }
 
 interface ProductWithDetails extends Product {
-    brand?: string
-    sku?: string
     weight?: number
     dimensions?: string
-    tags?: string[]
-    compare_at_price?: number
-    average_rating?: number
-    review_count?: number
-    specifications?: Record<string, string>
 }
 
 export default function ProductDetailPage() {
