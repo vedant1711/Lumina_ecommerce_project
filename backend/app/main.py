@@ -188,6 +188,10 @@ def run_auto_migrations(db_session=None):
             ("is_featured", "BOOLEAN DEFAULT FALSE"),
             ("sku", "VARCHAR(50)"),
             ("merchant_id", "INTEGER REFERENCES users(id)"),
+            ("weight", "FLOAT"),
+            ("dimensions", "JSON"),
+            ("images", "JSON"),
+            ("specifications", "JSON"),
         ]
         for col_name, col_def in product_columns:
             if not column_exists("products", col_name):
