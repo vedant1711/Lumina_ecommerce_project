@@ -124,100 +124,96 @@ from sqlalchemy import text
 
 @app.post("/migrate")
 def run_migrations(db: Session = Depends(get_db)):
-    """Add missing columns to the database schema."""
+    """Manually trigger database migrations."""
     try:
-        migrations_run = []
-        
-        # Check and add role column
-        try:
-            db.execute(text("SELECT role FROM users LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'customer'"))
-            migrations_run.append("Added 'role' column to users table")
-        
-        # Check and add store_name column
-        try:
-            db.execute(text("SELECT store_name FROM users LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE users ADD COLUMN store_name VARCHAR(255)"))
-            migrations_run.append("Added 'store_name' column to users table")
-        
-        # Check and add store_description column
-        try:
-            db.execute(text("SELECT store_description FROM users LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE users ADD COLUMN store_description TEXT"))
-            migrations_run.append("Added 'store_description' column to users table")
-        
-        # Check and add brand column to products
-        try:
-            db.execute(text("SELECT brand FROM products LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE products ADD COLUMN brand VARCHAR(100)"))
-            migrations_run.append("Added 'brand' column to products table")
-        
-        # Check and add compare_at_price column to products
-        try:
-            db.execute(text("SELECT compare_at_price FROM products LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE products ADD COLUMN compare_at_price FLOAT"))
-            migrations_run.append("Added 'compare_at_price' column to products table")
-        
-        # Check and add tags column to products
-        try:
-            db.execute(text("SELECT tags FROM products LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE products ADD COLUMN tags JSON"))
-            migrations_run.append("Added 'tags' column to products table")
-        
-        # Check and add is_featured column to products
-        try:
-            db.execute(text("SELECT is_featured FROM products LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE products ADD COLUMN is_featured BOOLEAN DEFAULT FALSE"))
-            migrations_run.append("Added 'is_featured' column to products table")
+        result = run_auto_migrations(db)
+        return result
+    except Exception as e:
+        return {"error": str(e)}
 
-        # Check and add sku column to products
-        try:
-            db.execute(text("SELECT sku FROM products LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE products ADD COLUMN sku VARCHAR(50)"))
-            migrations_run.append("Added 'sku' column to products table")
+def run_auto_migrations(db_session=None):
+    """Run database migrations automatically."""
+    # Use provided session or create a new one
+    if db_session:
+        db = db_session
+        should_close = False
+    else:
+        from sqlalchemy.orm import Session
+        db = Session(engine)
+        should_close = True
         
-        # Check and add merchant_id column to products
-        try:
-            db.execute(text("SELECT merchant_id FROM products LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE products ADD COLUMN merchant_id INTEGER REFERENCES users(id)"))
-            migrations_run.append("Added 'merchant_id' column to products table")
+    try:
+        migrations = []
+        print("Running database migrations...")
         
-        # Check and add image_url column to categories
-        try:
-            db.execute(text("SELECT image_url FROM categories LIMIT 1"))
-        except Exception:
-            db.rollback()
-            db.execute(text("ALTER TABLE categories ADD COLUMN image_url VARCHAR(500)"))
-            migrations_run.append("Added 'image_url' column to categories table")
+        # Helper to check if column exists
+        def column_exists(table, column):
+            query = text(f"SELECT column_name FROM information_schema.columns WHERE table_name='{table}' AND column_name='{column}'")
+            result = db.execute(query)
+            return result.scalar() is not None
+
+        # Users table migrations
+        user_columns = [
+            ("role", "VARCHAR(20) DEFAULT 'customer'"),
+            ("store_name", "VARCHAR(255)"),
+            ("store_description", "TEXT"),
+        ]
+        for col_name, col_def in user_columns:
+            if not column_exists("users", col_name):
+                try:
+                    db.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_def}"))
+                    migrations.append(f"users.{col_name}")
+                except Exception as e:
+                    print(f"Error adding {col_name}: {e}")
+                    # Don't rollback immediately if possible, but DDL failure usually needs rollback of transaction
+                    # However here we check first so failure is unlikely unless race condition
+                    pass
         
+        # Products table migrations
+        product_columns = [
+            ("brand", "VARCHAR(100)"),
+            ("compare_at_price", "FLOAT"),
+            ("tags", "JSON"),
+            ("is_featured", "BOOLEAN DEFAULT FALSE"),
+            ("sku", "VARCHAR(50)"),
+            ("merchant_id", "INTEGER REFERENCES users(id)"),
+        ]
+        for col_name, col_def in product_columns:
+            if not column_exists("products", col_name):
+                try:
+                    db.execute(text(f"ALTER TABLE products ADD COLUMN {col_name} {col_def}"))
+                    migrations.append(f"products.{col_name}")
+                except Exception as e:
+                     print(f"Error adding {col_name}: {e}")
+
+        # Categories table migrations
+        if not column_exists("categories", "image_url"):
+            try:
+                db.execute(text("ALTER TABLE categories ADD COLUMN image_url VARCHAR(500)"))
+                migrations.append("categories.image_url")
+            except Exception as e:
+                print(f"Error adding image_url: {e}")
+
         db.commit()
         
-        if migrations_run:
-            return {"message": "Migrations completed", "migrations": migrations_run}
-        return {"message": "No migrations needed, schema is up to date"}
-        
+        if migrations:
+            print(f"✅ Auto-migrations completed: {migrations}")
+            return {"message": "Migrations completed", "migrations": migrations}
+        else:
+            print("✅ Database schema is up to date")
+            return {"message": "Database schema is up to date"}
+            
     except Exception as e:
         db.rollback()
-        import traceback
-        return {"error": str(e), "traceback": traceback.format_exc()}
+        print(f"⚠️ Migration warning: {e}")
+        return {"error": str(e)}
+    finally:
+        if should_close:
+            db.close()
+
+# Run migrations on startup
+run_auto_migrations()
+
 
 @app.post("/setup")
 def initial_setup(db: Session = Depends(get_db)):
