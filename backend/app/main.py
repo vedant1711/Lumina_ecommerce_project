@@ -154,7 +154,7 @@ def run_auto_migrations(db_session=None):
 
         # Users table migrations
         user_columns = [
-            ("role", "VARCHAR(20) DEFAULT 'customer'"),
+            ("role", "VARCHAR(20) DEFAULT 'CUSTOMER'"),
             ("store_name", "VARCHAR(255)"),
             ("store_description", "TEXT"),
         ]
@@ -165,9 +165,20 @@ def run_auto_migrations(db_session=None):
                     migrations.append(f"users.{col_name}")
                 except Exception as e:
                     print(f"Error adding {col_name}: {e}")
-                    # Don't rollback immediately if possible, but DDL failure usually needs rollback of transaction
-                    # However here we check first so failure is unlikely unless race condition
                     pass
+        
+        # FIX: Update any lowercase roles to uppercase to match SQLAlchemy Enum names
+        try:
+            # Check if we have lowercase values
+            result = db.execute(text("SELECT count(*) FROM users WHERE role = 'customer' OR role = 'admin' OR role = 'merchant'"))
+            if result.scalar() > 0:
+                print("Fixing lowercase enum values in database...")
+                db.execute(text("UPDATE users SET role = 'CUSTOMER' WHERE role = 'customer'"))
+                db.execute(text("UPDATE users SET role = 'ADMIN' WHERE role = 'admin'"))
+                db.execute(text("UPDATE users SET role = 'MERCHANT' WHERE role = 'merchant'"))
+                migrations.append("Fixed lowercase role enums")
+        except Exception as e:
+            print(f"Error fixing enum case: {e}")
         
         # Products table migrations
         product_columns = [
