@@ -111,3 +111,62 @@ def checkout(
 @router.get("/orders/", response_model=List[OrderResponse])
 def get_orders(user: User = Depends(get_current_user), db: Session = Depends(database.get_db)):
     return user.orders
+
+@router.post("/orders/checkout-demo", response_model=OrderResponse)
+def checkout_demo(
+    user: User = Depends(get_current_user), 
+    db: Session = Depends(database.get_db)
+):
+    """Demo checkout without payment - for testing only."""
+    cart_key = get_cart_key(user.id)
+    cart_items_raw = redis_client.hgetall(cart_key)
+    
+    if not cart_items_raw:
+        raise HTTPException(status_code=400, detail="Cart is empty")
+
+    total_amount = 0.0
+    items_to_add = []
+
+    for pid_str, qty_str in cart_items_raw.items():
+        pid = int(pid_str)
+        qty = int(qty_str)
+        
+        product = db.query(Product).filter(Product.id == pid).first()
+        if not product:
+            raise HTTPException(status_code=400, detail=f"Product {pid} not found")
+        if product.stock < qty:
+            raise HTTPException(status_code=400, detail=f"Not enough stock for {product.name}")
+        
+        total_amount += product.price * qty
+        items_to_add.append({
+            "product": product,
+            "quantity": qty,
+            "price": product.price
+        })
+
+    # Create Order
+    new_order = Order(
+        user_id=user.id, 
+        total_amount=total_amount, 
+        status="paid",
+        payment_intent_id="demo_" + str(user.id) + "_" + str(int(__import__('time').time()))
+    )
+    db.add(new_order)
+    db.flush()
+
+    for item in items_to_add:
+        order_item = OrderItem(
+            order_id=new_order.id,
+            product_id=item["product"].id,
+            quantity=item["quantity"],
+            price_at_purchase=item["price"]
+        )
+        item["product"].stock -= item["quantity"]
+        db.add(order_item)
+
+    db.commit()
+    db.refresh(new_order)
+    
+    redis_client.delete(cart_key)
+    
+    return new_order

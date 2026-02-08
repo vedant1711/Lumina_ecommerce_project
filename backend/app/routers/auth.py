@@ -4,15 +4,17 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app import database
-from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse, Token
+from app.models.user import User, UserRole
+from app.schemas.user import UserCreate, UserResponse, Token, MerchantCreate
 from app.core import security
 from app.core.config import settings
+from app.core.dependencies import get_current_user
 
 router = APIRouter(tags=["Authentication"])
 
 @router.post("/signup", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(database.get_db)):
+    """Register a new customer account."""
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -21,7 +23,29 @@ def create_user(user: UserCreate, db: Session = Depends(database.get_db)):
     new_user = User(
         email=user.email,
         hashed_password=hashed_password,
-        full_name=user.full_name
+        full_name=user.full_name,
+        role=user.role if hasattr(user, 'role') else UserRole.CUSTOMER
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+@router.post("/signup/merchant", response_model=UserResponse)
+def create_merchant(merchant: MerchantCreate, db: Session = Depends(database.get_db)):
+    """Register a new merchant account."""
+    db_user = db.query(User).filter(User.email == merchant.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    hashed_password = security.get_password_hash(merchant.password)
+    new_user = User(
+        email=merchant.email,
+        hashed_password=hashed_password,
+        full_name=merchant.full_name,
+        role=UserRole.MERCHANT,
+        store_name=merchant.store_name,
+        store_description=merchant.store_description
     )
     db.add(new_user)
     db.commit()
@@ -30,26 +54,19 @@ def create_user(user: UserCreate, db: Session = Depends(database.get_db)):
 
 @router.post("/login", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
-    # Note: OAuth2PasswordRequestForm expects username field, so we just use email as username
-    print(f"DEBUG LOGIN: Attempting login for username: {form_data.username}")
+    """Login and get access token with user info."""
     user = db.query(User).filter(User.email == form_data.username).first()
     
     if not user:
-        print(f"DEBUG LOGIN: User not found for email: {form_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    print(f"DEBUG LOGIN: User found. ID={user.id}, Email={user.email}")
-    print(f"DEBUG LOGIN: Stored hash (first 20 chars): {user.hashed_password[:20]}")
-    
     password_valid = security.verify_password(form_data.password, user.hashed_password)
-    print(f"DEBUG LOGIN: Password verification result: {password_valid}")
     
     if not password_valid:
-        print(f"DEBUG LOGIN: Password verification FAILED")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -60,4 +77,41 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     access_token = security.create_access_token(
         subject=user.email, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "is_active": user.is_active,
+            "role": user.role,
+            "store_name": user.store_name
+        }
+    }
+
+@router.get("/me", response_model=UserResponse)
+def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """Get current logged-in user info."""
+    return current_user
+
+@router.put("/me", response_model=UserResponse)
+def update_current_user(
+    full_name: str = None,
+    store_name: str = None,
+    store_description: str = None,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Update current user profile."""
+    if full_name:
+        current_user.full_name = full_name
+    if store_name and current_user.role == UserRole.MERCHANT:
+        current_user.store_name = store_name
+    if store_description and current_user.role == UserRole.MERCHANT:
+        current_user.store_description = store_description
+    
+    db.commit()
+    db.refresh(current_user)
+    return current_user

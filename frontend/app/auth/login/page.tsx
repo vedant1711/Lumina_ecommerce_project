@@ -1,7 +1,6 @@
 "use client"
 
 import { toast } from "sonner"
-
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -42,10 +41,19 @@ export default function LoginPage() {
 
                             if (!res.ok) throw new Error('Login failed');
                             const data = await res.json();
+
+                            // Store token and user data
                             localStorage.setItem('token', data.access_token);
-                            // Simple window reload or redirect - ideally use a Context function or router
+                            if (data.user) {
+                                localStorage.setItem('user', JSON.stringify(data.user));
+                            }
+
                             toast.success("Logged in successfully");
-                            setTimeout(() => window.location.href = '/', 1000);
+
+                            // Redirect based on user role
+                            const redirectUrl = data.user?.role === 'merchant' ? '/merchant' :
+                                data.user?.role === 'admin' ? '/admin' : '/';
+                            setTimeout(() => window.location.href = redirectUrl, 1000);
                         } catch (err) {
                             toast.error("Invalid credentials");
                         }
@@ -67,11 +75,17 @@ export default function LoginPage() {
                         </Button>
                     </form>
                 </CardContent>
-                <CardFooter className="flex justify-center">
+                <CardFooter className="flex flex-col gap-2">
                     <p className="text-sm text-muted-foreground">
                         Don&apos;t have an account?{" "}
                         <Link href="/auth/signup" className="text-primary hover:underline">
                             Sign up
+                        </Link>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        Want to sell?{" "}
+                        <Link href="/auth/merchant-signup" className="text-primary hover:underline">
+                            Become a merchant
                         </Link>
                     </p>
                 </CardFooter>

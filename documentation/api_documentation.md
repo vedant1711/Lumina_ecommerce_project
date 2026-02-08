@@ -2,7 +2,8 @@
 
 Complete API reference for the Lumina E-Commerce platform.
 
-**Base URL**: `http://localhost:8000`
+**Base URL**: `http://localhost:8000`  
+**API Docs**: `http://localhost:8000/docs` (Swagger UI)
 
 ---
 
@@ -37,8 +38,8 @@ Create a new user account.
   "id": 1,
   "email": "user@example.com",
   "full_name": "John Doe",
-  "is_active": true,
-  "is_superuser": false
+  "role": "customer",
+  "is_active": true
 }
 ```
 
@@ -63,6 +64,22 @@ password=securepassword
 
 ---
 
+#### GET /auth/me (🔒 Protected)
+Get current authenticated user's information.
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "full_name": "John Doe",
+  "role": "customer",
+  "store_name": null
+}
+```
+
+---
+
 ### 🛍️ Products
 
 #### GET /products/
@@ -73,20 +90,31 @@ List all products with optional filtering.
 |-----------|------|-------------|
 | `skip` | int | Pagination offset (default: 0) |
 | `limit` | int | Max results (default: 100) |
-| `search` | string | Search by name/description (min 3 chars) |
+| `search` | string | Search by name/description |
 | `category_id` | int | Filter by category |
+| `brand` | string | Filter by brand |
+| `min_price` | float | Minimum price |
+| `max_price` | float | Maximum price |
+| `sort_by` | string | Sort: price_asc, price_desc, newest, rating |
 
 **Response (200):**
 ```json
 [
   {
     "id": 1,
-    "name": "Wireless Headphones",
-    "description": "Premium sound quality",
-    "price": 99.99,
-    "stock": 50,
+    "name": "MacBook Air M3",
+    "description": "Supercharged by M3 chip",
+    "price": 1099.00,
+    "compare_at_price": 1299.00,
+    "stock": 84,
     "image_url": "https://...",
-    "category_id": 1
+    "brand": "Apple",
+    "sku": "MBA-M3",
+    "category_id": 1,
+    "is_featured": true,
+    "average_rating": 4.5,
+    "review_count": 12,
+    "specifications": {"Chip": "Apple M3", "RAM": "8GB"}
   }
 ]
 ```
@@ -100,13 +128,42 @@ Get single product details.
 ```json
 {
   "id": 1,
-  "name": "Wireless Headphones",
-  "description": "Premium sound quality with noise cancellation",
-  "price": 99.99,
-  "stock": 50,
-  "image_url": "https://...",
-  "category_id": 1
+  "name": "MacBook Air M3",
+  "description": "Supercharged by M3 chip",
+  "price": 1099.00,
+  "stock": 84,
+  "brand": "Apple",
+  "sku": "MBA-M3",
+  "specifications": {"Chip": "Apple M3", "RAM": "8GB", "Storage": "256GB SSD"},
+  "average_rating": 4.5,
+  "review_count": 12
 }
+```
+
+---
+
+#### GET /products/featured
+Get featured products.
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "name": "MacBook Air M3",
+    "is_featured": true
+  }
+]
+```
+
+---
+
+#### GET /products/brands
+Get all unique product brands.
+
+**Response (200):**
+```json
+["Apple", "Samsung", "Sony", "Sony WH"]
 ```
 
 ---
@@ -116,13 +173,19 @@ Get single product details.
 #### GET /categories/
 List all product categories.
 
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `limit` | int | Max results (optional) |
+
 **Response (200):**
 ```json
 [
   {
     "id": 1,
     "name": "Electronics",
-    "description": "All things Electronics"
+    "description": "All electronic devices",
+    "image_url": "https://..."
   }
 ]
 ```
@@ -140,13 +203,13 @@ Get current user's cart.
   "items": [
     {
       "product_id": 1,
-      "name": "Wireless Headphones",
-      "price": 99.99,
+      "name": "MacBook Air M3",
+      "price": 1099.00,
       "image_url": "https://...",
       "quantity": 2
     }
   ],
-  "total_amount": 199.98
+  "total_amount": 2198.00
 }
 ```
 
@@ -163,13 +226,6 @@ Add item to cart.
 }
 ```
 
-**Response (200):**
-```json
-{
-  "message": "Item added to cart"
-}
-```
-
 ---
 
 #### PUT /cart/update
@@ -183,36 +239,123 @@ Update item quantity (set to 0 to remove).
 }
 ```
 
-**Response (200):**
-```json
-{
-  "message": "Cart updated"
-}
-```
-
 ---
 
 #### DELETE /cart/remove/{product_id}
 Remove specific item from cart.
-
-**Response (200):**
-```json
-{
-  "message": "Item removed from cart"
-}
-```
 
 ---
 
 #### DELETE /cart/clear
 Clear entire cart.
 
+---
+
+### ❤️ Wishlist (🔒 Protected)
+
+#### GET /wishlist/
+Get user's wishlist.
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "product_id": 2,
+    "added_at": "2024-01-15T10:30:00Z",
+    "product": {
+      "id": 2,
+      "name": "MacBook Air M3",
+      "price": 1099.00
+    }
+  }
+]
+```
+
+---
+
+#### POST /wishlist/{product_id}
+Add product to wishlist.
+
+---
+
+#### DELETE /wishlist/{product_id}
+Remove product from wishlist.
+
+---
+
+#### GET /wishlist/check/{product_id}
+Check if product is in wishlist.
+
 **Response (200):**
 ```json
 {
-  "message": "Cart cleared"
+  "in_wishlist": true
 }
 ```
+
+---
+
+### ⭐ Reviews
+
+#### GET /reviews/product/{product_id}
+Get all reviews for a product.
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "product_id": 2,
+    "user_id": 3,
+    "rating": 5,
+    "title": "Amazing laptop!",
+    "comment": "Best purchase I've made...",
+    "created_at": "2024-01-15T10:30:00Z",
+    "user_name": "John D."
+  }
+]
+```
+
+---
+
+#### GET /reviews/product/{product_id}/stats
+Get rating statistics for a product.
+
+**Response (200):**
+```json
+{
+  "average_rating": 4.5,
+  "total_reviews": 12,
+  "rating_breakdown": {
+    "5": 7,
+    "4": 3,
+    "3": 1,
+    "2": 0,
+    "1": 1
+  }
+}
+```
+
+---
+
+#### POST /reviews/ (🔒 Protected)
+Submit a product review.
+
+**Request Body:**
+```json
+{
+  "product_id": 2,
+  "rating": 5,
+  "title": "Great product!",
+  "comment": "Highly recommend this..."
+}
+```
+
+---
+
+#### POST /reviews/{review_id}/helpful (🔒 Protected)
+Mark a review as helpful.
 
 ---
 
@@ -224,7 +367,7 @@ Create a Stripe PaymentIntent for checkout.
 **Request Body:**
 ```json
 {
-  "amount": 199.98
+  "amount": 2198.00
 }
 ```
 
@@ -245,8 +388,7 @@ Verify payment status.
 ```json
 {
   "status": "succeeded",
-  "amount": 199.98,
-  "payment_method": "pm_xxx",
+  "amount": 2198.00,
   "succeeded": true
 }
 ```
@@ -261,26 +403,8 @@ Complete checkout after successful payment.
 **Request Body:**
 ```json
 {
-  "payment_intent_id": "pi_xxx"
-}
-```
-
-**Response (200):**
-```json
-{
-  "id": 1,
-  "user_id": 1,
-  "total_amount": 199.98,
-  "status": "paid",
-  "created_at": "2024-01-15T10:30:00Z",
-  "items": [
-    {
-      "id": 1,
-      "product_id": 1,
-      "quantity": 2,
-      "price_at_purchase": 99.99
-    }
-  ]
+  "payment_intent_id": "pi_xxx",
+  "shipping_address": "123 Main St, City, ST 12345"
 }
 ```
 
@@ -289,114 +413,191 @@ Complete checkout after successful payment.
 #### GET /orders/
 Get current user's order history.
 
+---
+
+### 🏪 Merchant (🔒 Merchant/Admin Only)
+
+#### GET /merchant/dashboard
+Get merchant dashboard statistics.
+
 **Response (200):**
 ```json
-[
-  {
-    "id": 1,
-    "total_amount": 199.98,
-    "status": "paid",
-    "created_at": "2024-01-15T10:30:00Z",
-    "items": [...]
-  }
-]
+{
+  "total_products": 5,
+  "total_orders": 12,
+  "total_revenue": 15420.00,
+  "recent_orders": [...]
+}
 ```
 
 ---
 
-### 👑 Admin (🔒 Superuser Only)
-
-#### GET /admin/users
-List all users.
-
-**Response (200):**
-```json
-[
-  {
-    "id": 1,
-    "email": "admin@example.com",
-    "full_name": "Admin User",
-    "is_active": true,
-    "is_superuser": true,
-    "created_at": "2024-01-01T00:00:00Z"
-  }
-]
-```
+#### GET /merchant/products
+List merchant's products.
 
 ---
 
-#### PUT /admin/users/{user_id}/role
-Update user's admin status.
+#### POST /merchant/products
+Create a new product.
 
 **Request Body:**
 ```json
 {
-  "is_superuser": true
+  "name": "New Product",
+  "description": "Product description",
+  "price": 99.99,
+  "stock": 100,
+  "category_id": 1,
+  "brand": "Brand Name",
+  "sku": "SKU-001"
 }
 ```
+
+---
+
+#### PUT /merchant/products/{product_id}
+Update an existing product.
+
+---
+
+#### GET /merchant/orders
+Get orders containing merchant's products.
+
+---
+
+### 👑 Admin (🔒 Admin Only)
+
+#### GET /admin/dashboard
+Get platform-wide statistics.
 
 **Response (200):**
 ```json
 {
-  "message": "User role updated",
-  "user": {
-    "id": 2,
-    "is_superuser": true
+  "total_users": 150,
+  "total_products": 500,
+  "total_orders": 1200,
+  "total_revenue": 125000.00,
+  "total_reviews": 800,
+  "user_breakdown": {
+    "customers": 140,
+    "merchants": 8,
+    "admins": 2
   }
 }
 ```
 
 ---
 
-#### GET /admin/orders
-List all orders across the platform.
+#### GET /admin/users
+List all users.
 
-**Response (200):**
+---
+
+#### PUT /admin/users/{user_id}/role
+Update user role.
+
+**Request Body:**
 ```json
-[
-  {
-    "id": 1,
-    "user_id": 1,
-    "total_amount": 199.98,
-    "status": "paid",
-    "created_at": "2024-01-15T10:30:00Z",
-    "user_email": "user@example.com",
-    "items_count": 2
-  }
-]
+{
+  "role": "merchant"
+}
 ```
 
 ---
 
-#### GET /admin/products
-List all products with category info.
+#### DELETE /admin/users/{user_id}
+Delete a user.
 
-**Response (200):**
-```json
-[
-  {
-    "id": 1,
-    "name": "Wireless Headphones",
-    "price": 99.99,
-    "stock": 50,
-    "category_name": "Electronics",
-    "created_at": "2024-01-01T00:00:00Z"
-  }
-]
-```
+---
+
+#### GET /admin/orders
+List all orders.
+
+---
+
+#### PUT /admin/orders/{order_id}/status?new_status=shipped
+Update order status.
+
+---
+
+#### GET /admin/products
+List all products.
+
+---
+
+#### PUT /admin/products/{product_id}/featured
+Toggle product featured status.
 
 ---
 
 #### GET /admin/categories
 List all categories.
 
+---
+
+#### POST /admin/categories
+Create a new category.
+
+---
+
+#### GET /admin/reviews
+List all reviews for moderation.
+
 **Response (200):**
 ```json
 [
   {
     "id": 1,
-    "name": "Electronics",
-    "description": "All things Electronics"
+    "product_id": 2,
+    "product_name": "MacBook Air M3",
+    "user_id": 3,
+    "user_email": "customer@example.com",
+    "rating": 5,
+    "title": "Great!",
+    "comment": "...",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+]
+```
+
+---
+
+#### DELETE /admin/reviews/{review_id}
+Delete a review (moderation).
+
+---
+
+#### GET /admin/wishlist-stats
+Get wishlist statistics.
+
+**Response (200):**
+```json
+{
+  "total_wishlist_items": 45,
+  "top_wishlisted_products": [
+    {"product_id": 2, "name": "MacBook Air M3", "count": 15}
+  ],
+  "users_with_most_items": [
+    {"user_id": 5, "email": "user@example.com", "item_count": 8}
+  ]
+}
+```
+
+---
+
+#### GET /admin/wishlist-items
+Get all wishlist items.
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "user_id": 3,
+    "user_email": "customer@example.com",
+    "product_id": 2,
+    "product_name": "MacBook Air M3",
+    "created_at": "2024-01-15T10:30:00Z"
   }
 ]
 ```
@@ -418,4 +619,20 @@ All errors follow this format:
 | 401 | Unauthorized - Missing/invalid token |
 | 403 | Forbidden - Insufficient permissions |
 | 404 | Not Found - Resource doesn't exist |
+| 422 | Validation Error - Invalid request body |
 | 500 | Server Error |
+
+---
+
+## Rate Limiting
+
+Currently no rate limiting is implemented. For production, consider adding rate limiting middleware.
+
+---
+
+## WebSocket (Future)
+
+Real-time notifications planned for:
+- Order status updates
+- New review notifications
+- Stock alerts
