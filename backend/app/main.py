@@ -230,6 +230,19 @@ def run_auto_migrations(db_session=None):
 run_auto_migrations()
 
 
+@app.post("/reset-db")
+def reset_database(db: Session = Depends(get_db)):
+    """Drops all tables and recreates them. DANGEROUS."""
+    # This is a nuclear option for development/fixing schema issues
+    try:
+        # Drop all tables
+        Base.metadata.drop_all(bind=engine)
+        # Recreate all tables
+        Base.metadata.create_all(bind=engine)
+        return {"message": "Database reset successfully! All tables dropped and recreated."}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.post("/setup")
 def initial_setup(db: Session = Depends(get_db)):
     """One-time setup to create admin, merchant, sample data."""
