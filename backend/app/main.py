@@ -2,6 +2,8 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy.orm import Session
+from sqlalchemy import text
+from contextlib import asynccontextmanager
 
 from app.database import engine, Base, get_db
 
@@ -17,6 +19,65 @@ from app.routers import auth, product, cart, order, admin, payment, review, wish
 
 # Create tables
 Base.metadata.create_all(bind=engine)
+
+def run_auto_migrations():
+    """Run database migrations automatically on startup."""
+    from sqlalchemy.orm import Session
+    with Session(engine) as db:
+        try:
+            migrations = []
+            
+            # Users table migrations
+            user_columns = [
+                ("role", "VARCHAR(20) DEFAULT 'customer'"),
+                ("store_name", "VARCHAR(255)"),
+                ("store_description", "TEXT"),
+            ]
+            for col_name, col_def in user_columns:
+                try:
+                    db.execute(text(f"SELECT {col_name} FROM users LIMIT 1"))
+                except Exception:
+                    db.rollback()
+                    db.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_def}"))
+                    migrations.append(f"users.{col_name}")
+            
+            # Products table migrations
+            product_columns = [
+                ("brand", "VARCHAR(100)"),
+                ("compare_at_price", "FLOAT"),
+                ("tags", "JSON"),
+                ("is_featured", "BOOLEAN DEFAULT FALSE"),
+                ("sku", "VARCHAR(50)"),
+                ("merchant_id", "INTEGER REFERENCES users(id)"),
+            ]
+            for col_name, col_def in product_columns:
+                try:
+                    db.execute(text(f"SELECT {col_name} FROM products LIMIT 1"))
+                except Exception:
+                    db.rollback()
+                    db.execute(text(f"ALTER TABLE products ADD COLUMN {col_name} {col_def}"))
+                    migrations.append(f"products.{col_name}")
+            
+            # Categories table migrations
+            try:
+                db.execute(text("SELECT image_url FROM categories LIMIT 1"))
+            except Exception:
+                db.rollback()
+                db.execute(text("ALTER TABLE categories ADD COLUMN image_url VARCHAR(500)"))
+                migrations.append("categories.image_url")
+            
+            db.commit()
+            if migrations:
+                print(f"✅ Auto-migrations completed: {migrations}")
+            else:
+                print("✅ Database schema is up to date")
+        except Exception as e:
+            db.rollback()
+            print(f"⚠️ Migration warning: {e}")
+
+# Run migrations on startup
+run_auto_migrations()
+
 
 app = FastAPI(
     title="Lumina E-Commerce API",
@@ -59,6 +120,104 @@ from app.models.user import UserRole
 from app.core.security import get_password_hash
 import random
 from datetime import datetime, timedelta
+from sqlalchemy import text
+
+@app.post("/migrate")
+def run_migrations(db: Session = Depends(get_db)):
+    """Add missing columns to the database schema."""
+    try:
+        migrations_run = []
+        
+        # Check and add role column
+        try:
+            db.execute(text("SELECT role FROM users LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'customer'"))
+            migrations_run.append("Added 'role' column to users table")
+        
+        # Check and add store_name column
+        try:
+            db.execute(text("SELECT store_name FROM users LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE users ADD COLUMN store_name VARCHAR(255)"))
+            migrations_run.append("Added 'store_name' column to users table")
+        
+        # Check and add store_description column
+        try:
+            db.execute(text("SELECT store_description FROM users LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE users ADD COLUMN store_description TEXT"))
+            migrations_run.append("Added 'store_description' column to users table")
+        
+        # Check and add brand column to products
+        try:
+            db.execute(text("SELECT brand FROM products LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE products ADD COLUMN brand VARCHAR(100)"))
+            migrations_run.append("Added 'brand' column to products table")
+        
+        # Check and add compare_at_price column to products
+        try:
+            db.execute(text("SELECT compare_at_price FROM products LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE products ADD COLUMN compare_at_price FLOAT"))
+            migrations_run.append("Added 'compare_at_price' column to products table")
+        
+        # Check and add tags column to products
+        try:
+            db.execute(text("SELECT tags FROM products LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE products ADD COLUMN tags JSON"))
+            migrations_run.append("Added 'tags' column to products table")
+        
+        # Check and add is_featured column to products
+        try:
+            db.execute(text("SELECT is_featured FROM products LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE products ADD COLUMN is_featured BOOLEAN DEFAULT FALSE"))
+            migrations_run.append("Added 'is_featured' column to products table")
+
+        # Check and add sku column to products
+        try:
+            db.execute(text("SELECT sku FROM products LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE products ADD COLUMN sku VARCHAR(50)"))
+            migrations_run.append("Added 'sku' column to products table")
+        
+        # Check and add merchant_id column to products
+        try:
+            db.execute(text("SELECT merchant_id FROM products LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE products ADD COLUMN merchant_id INTEGER REFERENCES users(id)"))
+            migrations_run.append("Added 'merchant_id' column to products table")
+        
+        # Check and add image_url column to categories
+        try:
+            db.execute(text("SELECT image_url FROM categories LIMIT 1"))
+        except Exception:
+            db.rollback()
+            db.execute(text("ALTER TABLE categories ADD COLUMN image_url VARCHAR(500)"))
+            migrations_run.append("Added 'image_url' column to categories table")
+        
+        db.commit()
+        
+        if migrations_run:
+            return {"message": "Migrations completed", "migrations": migrations_run}
+        return {"message": "No migrations needed, schema is up to date"}
+        
+    except Exception as e:
+        db.rollback()
+        import traceback
+        return {"error": str(e), "traceback": traceback.format_exc()}
 
 @app.post("/setup")
 def initial_setup(db: Session = Depends(get_db)):
