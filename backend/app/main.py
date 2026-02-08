@@ -98,7 +98,7 @@ def initial_setup(db: Session = Depends(get_db)):
         {"name": "Electronics", "description": "Phones, Laptops, Accessories", "image_url": "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400"},
         {"name": "Fashion", "description": "Clothing, Shoes, Accessories", "image_url": "https://images.unsplash.com/photo-1445205170230-053b83016050?w=400"},
         {"name": "Home & Living", "description": "Furniture, Decor, Kitchen", "image_url": "https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=400"},
-        {"name": "Sports & Outdoors", "description": "Equipment, Apparel, Gear", "image_url": "https://images.unsplash.com/photo-1461896836934- voices?w=400"},
+        {"name": "Sports & Outdoors", "description": "Equipment, Apparel, Gear", "image_url": "https://images.unsplash.com/photo-1461896836934-2a01a5e7e6a2?w=400"},
         {"name": "Books & Media", "description": "Books, Games, Entertainment", "image_url": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400"},
     ]
     
