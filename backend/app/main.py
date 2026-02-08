@@ -219,11 +219,11 @@ run_auto_migrations()
 def initial_setup(db: Session = Depends(get_db)):
     """One-time setup to create admin, merchant, sample data."""
     try:
-        # Check if already set up
-        existing_admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+        # Check if already set up by looking for admin user
+        existing_admin = db.query(User).filter(User.email == "admin@lumina.com").first()
         if existing_admin:
             return {"message": "Setup already completed", "admin_email": existing_admin.email}
-        
+    
         # Create admin
         admin = User(
             email="admin@lumina.com",
@@ -235,17 +235,20 @@ def initial_setup(db: Session = Depends(get_db)):
         )
         db.add(admin)
         
-        # Create merchant
-        merchant = User(
-            email="merchant@lumina.com",
-            full_name="Lumina Store",
-            hashed_password=get_password_hash("merchant123"),
-            is_active=True,
-            role=UserRole.MERCHANT,
-            store_name="Lumina Official Store",
-            store_description="Official store for premium products"
-        )
-        db.add(merchant)
+        # Create merchant if not exists
+        merchant = db.query(User).filter(User.email == "merchant@lumina.com").first()
+        if not merchant:
+            merchant = User(
+                email="merchant@lumina.com",
+                full_name="Lumina Store",
+                hashed_password=get_password_hash("merchant123"),
+                is_active=True,
+                role=UserRole.MERCHANT,
+                store_name="Lumina Official Store",
+                store_description="Official store for premium products"
+            )
+            db.add(merchant)
+        
         db.flush()
         
         # Create categories
