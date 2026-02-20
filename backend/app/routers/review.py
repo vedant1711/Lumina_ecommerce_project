@@ -7,6 +7,7 @@ from app.models.review import Review
 from app.models.order import Order
 from app.core.dependencies import get_current_user
 from app.schemas.review import ReviewCreate, ReviewUpdate, ReviewResponse, ReviewStats
+from app.services.ai_service import analyze_sentiment
 
 router = APIRouter(
     prefix="/reviews",
@@ -37,6 +38,8 @@ def get_product_reviews(
             "comment": review.comment,
             "helpful_count": review.helpful_count,
             "verified_purchase": review.verified_purchase,
+            "sentiment_score": review.sentiment_score,
+            "sentiment_label": review.sentiment_label,
             "created_at": review.created_at,
             "updated_at": review.updated_at,
             "user_name": review.user.full_name if review.user else "Anonymous"
@@ -95,13 +98,19 @@ def create_review(
         Order.status == "paid"
     ).first() is not None
     
+    # Compute sentiment
+    review_text = f"{review.title or ''} {review.comment or ''}".strip()
+    sentiment = analyze_sentiment(review_text)
+    
     new_review = Review(
         user_id=current_user.id,
         product_id=review.product_id,
         rating=review.rating,
         title=review.title,
         comment=review.comment,
-        verified_purchase=verified
+        verified_purchase=verified,
+        sentiment_score=sentiment["polarity"],
+        sentiment_label=sentiment["label"],
     )
     db.add(new_review)
     db.commit()
@@ -130,6 +139,13 @@ def update_review(
     
     for key, value in review_update.dict(exclude_unset=True).items():
         setattr(review, key, value)
+    
+    # Recompute sentiment if text changed
+    if review_update.title is not None or review_update.comment is not None:
+        review_text = f"{review.title or ''} {review.comment or ''}".strip()
+        sentiment = analyze_sentiment(review_text)
+        review.sentiment_score = sentiment["polarity"]
+        review.sentiment_label = sentiment["label"]
     
     db.commit()
     db.refresh(review)

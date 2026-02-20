@@ -21,6 +21,8 @@ class ReviewResponse(ReviewBase):
     product_id: int
     helpful_count: int = 0
     verified_purchase: bool = False
+    sentiment_score: Optional[float] = None
+    sentiment_label: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     

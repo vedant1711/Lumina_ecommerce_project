@@ -15,6 +15,7 @@ import {
 import Link from "next/link"
 import { toast } from "sonner"
 import { useParams, useRouter } from "next/navigation"
+import RelatedProducts from "@/components/products/RelatedProducts"
 
 interface Review {
     id: number
@@ -509,6 +510,9 @@ export default function ProductDetailPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {/* AI-Powered Related Products */}
+            <RelatedProducts productId={product.id} productName={product.name} />
         </div>
     )
 }

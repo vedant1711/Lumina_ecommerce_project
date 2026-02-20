@@ -221,3 +221,22 @@ export async function updateUserRole(user_id: number, role: string) {
         body: JSON.stringify({ role }),
     });
 }
+
+// AI / Analytics
+export async function getProductRecommendations(product_id: number, limit: number = 8) {
+    return fetchWithAuth(`/analytics/recommendations/product/${product_id}?limit=${limit}`);
+}
+
+export async function getUserRecommendations(limit: number = 12) {
+    return fetchWithAuth(`/analytics/recommendations/user?limit=${limit}`);
+}
+
+export async function getTrendingProducts(limit: number = 12) {
+    const res = await fetch(`${API_URL}/analytics/recommendations/trending?limit=${limit}`);
+    if (!res.ok) throw new Error('Failed to fetch trending products');
+    return res.json();
+}
+
+export async function getProductSentiment(product_id: number) {
+    return fetchWithAuth(`/analytics/sentiment/product/${product_id}`);
+}

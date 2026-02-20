@@ -18,6 +18,10 @@ class Review(Base):
     helpful_count = Column(Integer, default=0)
     verified_purchase = Column(Boolean, default=False)
     
+    # AI: Sentiment analysis
+    sentiment_score = Column(Float, nullable=True)      # -1.0 to 1.0
+    sentiment_label = Column(String, nullable=True)      # "positive", "neutral", "negative"
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

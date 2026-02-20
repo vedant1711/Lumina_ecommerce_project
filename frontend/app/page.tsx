@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Star, Zap, Shield } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import PersonalizedFeed from "@/components/home/PersonalizedFeed"
 
 export default function Home() {
   return (
@@ -66,6 +67,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* AI-Powered Personalized Recommendations */}
+      <PersonalizedFeed />
 
       {/* Hero 2 - Categories Teaser */}
       <section className="py-24">

@@ -15,7 +15,7 @@ from app.models.review import Review
 from app.models.wishlist import WishlistItem
 
 # Import routers
-from app.routers import auth, product, cart, order, admin, payment, review, wishlist, merchant
+from app.routers import auth, product, cart, order, admin, payment, review, wishlist, merchant, analytics
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -57,6 +57,19 @@ def run_auto_migrations():
                     db.rollback()
                     db.execute(text(f"ALTER TABLE products ADD COLUMN {col_name} {col_def}"))
                     migrations.append(f"products.{col_name}")
+            
+            # Reviews table migrations (sentiment columns)
+            review_columns = [
+                ("sentiment_score", "FLOAT"),
+                ("sentiment_label", "VARCHAR(20)"),
+            ]
+            for col_name, col_def in review_columns:
+                try:
+                    db.execute(text(f"SELECT {col_name} FROM reviews LIMIT 1"))
+                except Exception:
+                    db.rollback()
+                    db.execute(text(f"ALTER TABLE reviews ADD COLUMN {col_name} {col_def}"))
+                    migrations.append(f"reviews.{col_name}")
             
             # Categories table migrations
             try:
@@ -106,6 +119,7 @@ app.include_router(payment.router)
 app.include_router(review.router)
 app.include_router(wishlist.router)
 app.include_router(merchant.router)
+app.include_router(analytics.router)
 
 @app.get("/")
 def read_root():
