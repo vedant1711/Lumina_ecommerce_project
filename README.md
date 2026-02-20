@@ -1,6 +1,6 @@
 # Lumina E-Commerce Platform
 
-A modern, full-stack e-commerce application built with **Next.js 16** and **FastAPI**, featuring Stripe payment integration, real-time cart management, multi-role authentication, comprehensive admin dashboard, and a premium dark-themed UI experience.
+A modern, full-stack e-commerce application built with **Next.js 16** and **FastAPI**, featuring **AI-powered product recommendations**, **sentiment analysis**, Stripe payment integration, real-time cart management, multi-role authentication, comprehensive admin dashboard, and a premium dark-themed UI experience.
 
 ![Homepage](./documentation/screenshots/homepage.png)
 
@@ -11,11 +11,18 @@ A modern, full-stack e-commerce application built with **Next.js 16** and **Fast
 - **Product Details** - Rich product pages with specifications, reviews, and ratings
 - **Shopping Cart** - Real-time cart with quantity controls (Redis-backed)
 - **Wishlist** - Save products for later purchase
-- **Reviews & Ratings** - Read and write product reviews with star ratings
+- **Reviews & Ratings** - Read and write product reviews with star ratings and AI sentiment labels
 - **Stripe Checkout** - Secure payments with multiple methods (Card, Affirm, Cash App, Klarna, Amazon Pay)
 - **Order History** - View past orders and order details
 - **Dark/Light Mode** - Theme switching with system preference detection
 - **Authentication** - Secure JWT-based login and registration
+
+### 🤖 AI-Powered Features
+- **Sentiment Analysis** - Automatic NLP analysis of review text using TextBlob (positive/neutral/negative with polarity scores)
+- **Product Recommendations** - "You May Also Like" section on product pages using TF-IDF vectorization + Cosine Similarity
+- **Personalized Home Feed** - "Recommended for You" based on purchase history, wishlist, and review ratings
+- **Trending Products** - Featured/popular products for anonymous users
+- **Aggregate Sentiment** - Per-product sentiment distribution across all reviews
 
 ### 🏪 Merchant Features
 - **Merchant Dashboard** - Overview of sales, orders, and products
@@ -62,6 +69,7 @@ A modern, full-stack e-commerce application built with **Next.js 16** and **Fast
 | **Cache** | Redis (cart storage) |
 | **Payments** | Stripe API |
 | **Auth** | JWT (python-jose) |
+| **AI/ML** | TextBlob (sentiment), scikit-learn (TF-IDF + cosine similarity), NumPy |
 
 ---
 
@@ -87,6 +95,9 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 # Install dependencies
 cd backend
 pip install -r requirements.txt
+
+# Download NLP data for sentiment analysis
+python -m textblob.download_corpora
 
 # Set environment variables
 cp .env.example .env
@@ -190,10 +201,19 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
 ### Reviews
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/reviews/product/{id}` | Get product reviews |
+| GET | `/reviews/product/{id}` | Get product reviews (includes sentiment) |
 | GET | `/reviews/product/{id}/stats` | Get rating statistics |
-| POST | `/reviews/` | Submit a review |
+| POST | `/reviews/` | Submit a review (auto-computes sentiment) |
 | POST | `/reviews/{id}/helpful` | Mark review as helpful |
+
+### Analytics / AI 🤖
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/analytics/recommendations/product/{id}` | Similar products (TF-IDF) |
+| GET | `/analytics/recommendations/user` | Personalized recommendations (🔒) |
+| GET | `/analytics/recommendations/trending` | Trending/featured products |
+| GET | `/analytics/sentiment/product/{id}` | Aggregate product sentiment |
+| GET | `/analytics/sentiment/{review_id}` | Single review sentiment |
 
 ### Orders
 | Method | Endpoint | Description |
@@ -262,18 +282,24 @@ ecommerce_project/
 │   ├── app/
 │   │   ├── core/           # Config, security, dependencies
 │   │   ├── models/         # SQLAlchemy models (User, Product, Order, Review, Wishlist)
-│   │   ├── routers/        # API endpoints (auth, products, cart, admin, merchant)
-│   │   └── schemas/        # Pydantic schemas
+│   │   ├── routers/        # API endpoints (auth, products, cart, admin, merchant, analytics)
+│   │   ├── schemas/        # Pydantic schemas
+│   │   └── services/       # AI services (sentiment, recommendations)
+│   │       └── ai_service.py
 │   ├── requirements.txt
 │   └── seed_data.py        # Sample data seeder
 ├── frontend/
 │   ├── app/                # Next.js App Router pages
 │   │   ├── admin/          # Admin dashboard
 │   │   ├── merchant/       # Merchant dashboard
-│   │   ├── products/       # Product listing and details
+│   │   ├── products/       # Product listing + AI recommendations
 │   │   ├── cart/           # Shopping cart
 │   │   └── auth/           # Login and signup
-│   ├── components/         # React components (ui, layout)
+│   ├── components/         # React components (ui, layout, AI)
+│   │   ├── home/
+│   │   │   └── PersonalizedFeed.tsx   # AI trending/personalized feed
+│   │   └── products/
+│   │       └── RelatedProducts.tsx    # AI "You May Also Like"
 │   ├── lib/                # API client, utilities
 │   └── context/            # Auth context
 ├── documentation/
@@ -300,6 +326,13 @@ See the [Deployment Guide](./documentation/deployment.md) for detailed instructi
 ---
 
 ## 🔄 Recent Updates
+
+### v3.0 - AI Intelligence Layer
+- 🤖 **Sentiment Analysis** - TextBlob NLP for automatic review sentiment scoring
+- 🎯 **Product Recommendations** - TF-IDF + Cosine Similarity for "You May Also Like"
+- ✨ **Personalized Home Feed** - AI-curated product feed based on user behavior
+- 📊 **Trending Products** - Featured/popular products for anonymous visitors
+- 📈 **Aggregate Sentiment** - Per-product sentiment distribution API
 
 ### v2.0 - Admin & Reviews Enhancement
 - ✅ **Admin Dashboard** - 7 tabs with full platform management
