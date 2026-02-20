@@ -606,6 +606,132 @@ Get all wishlist items.
 
 ## Error Responses
 
+### 🤖 Analytics / AI
+
+#### GET /analytics/recommendations/product/{product_id}
+Get AI-powered similar product recommendations using TF-IDF + Cosine Similarity.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `limit` | int | Max results (default: 8) |
+
+**Response (200):**
+```json
+{
+  "product_id": 1,
+  "product_name": "iPhone 15 Pro",
+  "recommendations": [
+    {
+      "id": 3,
+      "name": "AirPods Pro 2",
+      "price": 249.00,
+      "brand": "Apple",
+      "category": "Electronics",
+      "similarity_score": 0.207,
+      "image_url": "https://...",
+      "average_rating": 4.5,
+      "discount_percent": 11
+    }
+  ]
+}
+```
+
+---
+
+#### GET /analytics/recommendations/user (🔒 Protected)
+Personalized recommendations based on purchase history, wishlist, and review ratings.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `limit` | int | Max results (default: 12) |
+
+**Response (200):**
+```json
+{
+  "strategy": "personalized",
+  "reason": "Based on your interest in Electronics and brands like Apple",
+  "products": [
+    {
+      "id": 3,
+      "name": "AirPods Pro 2",
+      "price": 249.00,
+      "relevance_score": 15.0
+    }
+  ]
+}
+```
+
+---
+
+#### GET /analytics/recommendations/trending
+Trending/featured products. **Public endpoint, no auth required.**
+
+**Response (200):**
+```json
+{
+  "strategy": "trending",
+  "reason": "Popular and featured products",
+  "products": [...]
+}
+```
+
+---
+
+#### GET /analytics/sentiment/product/{product_id}
+Aggregate sentiment analysis for all reviews of a product.
+
+**Response (200):**
+```json
+{
+  "product_id": 1,
+  "total_reviews": 2,
+  "average_sentiment": -0.165,
+  "sentiment_distribution": {
+    "positive": 1,
+    "neutral": 0,
+    "negative": 1
+  },
+  "reviews": [
+    {
+      "review_id": 1,
+      "rating": 5,
+      "sentiment": {
+        "polarity": 0.67,
+        "subjectivity": 0.628,
+        "label": "positive"
+      }
+    }
+  ]
+}
+```
+
+---
+
+#### GET /analytics/sentiment/{review_id}
+Get sentiment for a single review.
+
+**Response (200):**
+```json
+{
+  "review_id": 1,
+  "text": "Absolutely amazing! Best phone ever.",
+  "sentiment": {
+    "polarity": 0.67,
+    "subjectivity": 0.628,
+    "label": "positive"
+  },
+  "stored_score": 0.67
+}
+```
+
+> **Note:** Sentiment is automatically computed when reviews are created (`POST /reviews/`) or updated (`PUT /reviews/{id}`). Review responses now include `sentiment_score` and `sentiment_label` fields.
+
+---
+
+## Error Responses
+
 All errors follow this format:
 ```json
 {

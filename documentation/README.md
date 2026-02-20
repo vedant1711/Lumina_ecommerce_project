@@ -77,14 +77,14 @@ All UI screenshots are in the [screenshots](./screenshots/) folder:
 │   Frontend      │────│    Backend      │────│   Database      │
 │   (Next.js)     │    │   (FastAPI)     │    │  (PostgreSQL)   │
 │   Port: 3000    │    │   Port: 8000    │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+└─────────────────┘    └────────┬────────┘    └─────────────────┘
          │                      │                      
-         │                      │                      
-         ▼                      ▼                      
-┌─────────────────┐    ┌─────────────────┐           
-│   Stripe API    │    │    Redis        │           
-│   (Payments)    │    │   (Cart Cache)  │           
-└─────────────────┘    └─────────────────┘           
+         │              ┌───────┴────────┐              
+         ▼              │   AI / ML      │              
+┌─────────────────┐     │  - TextBlob    │     ┌─────────────────┐
+│   Stripe API    │     │  - Scikit-learn│     │    Redis        │
+│   (Payments)    │     │  - TF-IDF      │     │   (Cart Cache)  │
+└─────────────────┘     └────────────────┘     └─────────────────┘
 ```
 
 ---
@@ -98,6 +98,13 @@ All UI screenshots are in the [screenshots](./screenshots/) folder:
 - ✅ Product search and filtering
 - ✅ Wishlist functionality
 - ✅ Order tracking
+
+### 🤖 AI-Powered Features
+- ✅ **Sentiment Analysis** — Automatic NLP analysis of review text (positive/neutral/negative)
+- ✅ **Product Recommendations** — "You May Also Like" section using TF-IDF + Cosine Similarity
+- ✅ **Personalized Home Feed** — "Recommended for You" based on purchase history, wishlist, and review ratings
+- ✅ **Trending Feed** — Featured/popular products for anonymous users
+- ✅ **Aggregate Sentiment** — Per-product sentiment distribution across all reviews
 
 ### Admin Capabilities
 - ✅ User role management

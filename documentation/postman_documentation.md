@@ -50,6 +50,12 @@ Lumina E-Commerce API
 ├── Orders
 │   ├── Checkout
 │   └── Get Orders
+├── Analytics / AI
+│   ├── Get Trending Products
+│   ├── Get Product Recommendations
+│   ├── Get User Recommendations (🔒)
+│   ├── Get Product Sentiment
+│   └── Get Review Sentiment
 └── Admin
     ├── List Users
     ├── Update User Role
@@ -67,6 +73,15 @@ Lumina E-Commerce API
 5. **Create Payment Intent** → Get Stripe client secret
 6. (Complete payment via frontend)
 7. **Checkout** → Complete order with payment_intent_id
+
+## AI Features Test Flow
+
+1. **Get Trending Products** → `GET /analytics/recommendations/trending` (no auth needed)
+2. **Get Product Recommendations** → `GET /analytics/recommendations/product/1`
+3. **Login** → Get auth token
+4. **Submit Review** → `POST /reviews/` (sentiment auto-computed in response)
+5. **Get Product Sentiment** → `GET /analytics/sentiment/product/1`
+6. **Get User Recommendations** → `GET /analytics/recommendations/user` (personalized)
 
 ## Default Test Credentials
 

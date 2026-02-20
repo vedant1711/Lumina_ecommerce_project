@@ -20,7 +20,7 @@
 ```
 frontend/
 ├── app/                    # Next.js App Router pages
-│   ├── page.tsx           # Landing page with hero
+│   ├── page.tsx           # Landing page with hero + AI feed
 │   ├── layout.tsx         # Root layout with providers
 │   ├── globals.css        # Global styles and theme
 │   │
@@ -30,7 +30,7 @@ frontend/
 │   │
 │   ├── products/          # Product pages
 │   │   ├── page.tsx       # Product listing with filters
-│   │   └── [id]/          # Product detail with reviews
+│   │   └── [id]/          # Product detail + AI recommendations
 │   │
 │   ├── cart/              # Shopping cart
 │   ├── checkout/          # Stripe checkout
@@ -63,12 +63,18 @@ frontend/
 │   │   ├── Navbar.tsx     # Navigation with auth state
 │   │   └── Footer.tsx
 │   │
+│   ├── home/
+│   │   └── PersonalizedFeed.tsx  # AI-powered trending/personalized feed
+│   │
+│   ├── products/
+│   │   └── RelatedProducts.tsx   # AI-powered "You May Also Like"
+│   │
 │   ├── ProductCard.tsx    # Product grid card
 │   ├── FilterPanel.tsx    # Product filters
 │   └── theme-provider.tsx # Dark/light mode
 │
 ├── lib/
-│   ├── api.ts             # API client with fetchWithAuth
+│   ├── api.ts             # API client with fetchWithAuth + AI endpoints
 │   ├── utils.ts           # cn() utility for classnames
 │   └── stripe.ts          # Stripe configuration
 │
@@ -82,7 +88,7 @@ frontend/
 
 ### Landing Page (`/`)
 - Hero section with promotional content
-- Featured products carousel
+- **AI-Powered Feed**: "Trending Now" (anonymous) or "Recommended for You" (logged in)
 - Category showcase
 - Call-to-action buttons
 
@@ -105,8 +111,9 @@ frontend/
 - **Specifications Tab**: Technical details
 - **Reviews Tab**:
   - Rating breakdown bars
-  - Individual reviews
-  - Write review form
+  - Individual reviews with sentiment labels
+  - Write review form (auto-computes sentiment)
+- **"You May Also Like"**: AI-powered related products with similarity scores
 
 ### Shopping Cart (`/cart`)
 - Cart items with quantity controls
@@ -153,6 +160,20 @@ frontend/
 - Price range slider
 - Clear filters button
 
+### PersonalizedFeed (`components/home/PersonalizedFeed.tsx`)
+- Fetches personalized recommendations for logged-in users
+- Falls back to trending products for anonymous users
+- Displays strategy label ("Recommended for You" vs "Trending Now")
+- Shows explanation text (e.g., "Based on your interest in Electronics")
+- Responsive product grid with cards, badges, and hover effects
+
+### RelatedProducts (`components/products/RelatedProducts.tsx`)
+- Fetches AI-powered similar product recommendations
+- Uses TF-IDF + Cosine Similarity for content-based filtering
+- Displays similarity score badges ("X% Match") for high-confidence matches
+- Responsive 4-column grid with product cards
+- Shown at the bottom of each product detail page
+
 ---
 
 ## State Management
@@ -173,6 +194,14 @@ const data = await fetchWithAuth('/cart/');
 
 // Public request
 const products = await getProducts({ category_id: 1 });
+
+// AI / Analytics
+import { getProductRecommendations, getUserRecommendations, getTrendingProducts, getProductSentiment } from "@/lib/api";
+
+const similar = await getProductRecommendations(productId, 8);  // Similar products
+const feed = await getUserRecommendations(12);                   // Personalized feed
+const trending = await getTrendingProducts(12);                  // Public trending
+const sentiment = await getProductSentiment(productId);          // Review sentiment
 ```
 
 ---

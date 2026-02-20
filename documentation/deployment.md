@@ -45,9 +45,11 @@ Complete guide to deploy Lumina E-Commerce on free-tier cloud services.
    - **Name**: `lumina-api`
    - **Root Directory**: `backend`
    - **Runtime**: Python 3
-   - **Build Command**: `pip install -r requirements.txt`
+   - **Build Command**: `pip install -r requirements.txt && python -m textblob.download_corpora`
    - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
    - **Plan**: Free
+
+> **AI Dependencies Note:** The build command includes `python -m textblob.download_corpora` to download the NLP data required for sentiment analysis. The `requirements.txt` includes `textblob`, `scikit-learn`, and `numpy` for the AI features.
 
 5. Add Environment Variables:
    | Key | Value |
@@ -137,6 +139,11 @@ curl -X POST https://your-api.onrender.com/auth/signup \
 - Verify Neon database is active
 - Check SSL mode in connection string
 - Try adding `?sslmode=require` to DATABASE_URL
+
+### AI features not working
+- Ensure TextBlob corpora is downloaded (check build logs for `textblob.download_corpora`)
+- Verify `textblob`, `scikit-learn`, and `numpy` are in `requirements.txt`
+- Check Render logs for import errors on `textblob` or `sklearn`
 
 ---
 
